@@ -1,0 +1,94 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #0b1120;
+    background-image:
+        radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.15), transparent 30%),
+        radial-gradient(circle at 85% 20%, rgba(139, 92, 246, 0.15), transparent 30%),
+        radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.1), transparent 40%);
+    color: #e2e8f0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Antigravity Glassmorphism Utilities */
+.glass-panel {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-input {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+    outline: none;
+    border-color: rgba(56, 189, 248, 0.6);
+    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+}
+
+.float-anim {
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+}
+
+.float-anim:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 30px 60px -12px rgba(56, 189, 248, 0.25);
+    z-index: 10;
+}
+
+/* Spreadsheet-like Table Styles */
+.spreadsheet-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.spreadsheet-table th,
+.spreadsheet-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.spreadsheet-table th {
+    background: rgba(255, 255, 255, 0.03);
+    font-weight: 600;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.spreadsheet-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.hidden {
+    display: none !important;
+}

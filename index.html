@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-SURAT | Fakultas Teknik Cerdas Berkelanjutan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=3.0.1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="glass-panel p-8 md:p-12 rounded-3xl w-full max-w-md float-anim relative overflow-hidden">
+            <div
+                class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20">
+            </div>
+
+            <div class="text-center mb-8">
+                <h2 class="text-sm font-bold tracking-widest text-cyan-400 mb-2">E-SURAT</h2>
+                <h1
+                    class="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                    Fakultas Teknik Cerdas Berkelanjutan
+                </h1>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Username</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-4 top-3.5 text-gray-500"></i>
+                        <input type="text" id="username"
+                            class="glass-input w-full pl-11 pr-4 py-3 rounded-xl focus:ring-2 focus:ring-cyan-500"
+                            placeholder="Masukkan username (dekan / kepalasek)" onkeypress="handleEnter(event)">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Password</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-4 top-3.5 text-gray-500"></i>
+                        <input type="password" id="password"
+                            class="glass-input w-full pl-11 pr-12 py-3 rounded-xl focus:ring-2 focus:ring-cyan-500"
+                            placeholder="••••••••" onkeypress="handleEnter(event)">
+                        <button type="button" onclick="togglePassword()"
+                            class="absolute right-4 top-3.5 text-gray-500 hover:text-white transition-colors">
+                            <i class="fas fa-eye" id="eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="login-error"
+                    class="hidden text-red-400 text-sm text-center bg-red-400/10 p-2 rounded-lg border border-red-400/20">
+                    Username atau password salah!
+                </div>
+                <button onclick="login()"
+                    class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold py-3 rounded-xl shadow-lg shadow-cyan-500/30 transform transition hover:-translate-y-1">
+                    Masuk ke Dashboard <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD SCREEN -->
+    <div id="dashboard-screen" class="hidden min-h-screen flex flex-col md:flex-row">
+
+        <!-- SIDEBAR -->
+        <aside
+            class="w-full md:w-64 glass-panel border-r border-t-0 border-b-0 border-l-0 rounded-none md:min-h-screen flex flex-col z-20">
+            <div class="p-6 border-b border-white/5 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold tracking-wider text-cyan-400">E-SURAT</h2>
+                    <p class="text-xs text-gray-500 font-medium">FTCB Dashboard</p>
+                </div>
+                <button class="md:hidden text-gray-400 hover:text-white" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Sidebar Navigation -->
+            <nav id="sidebar-nav" class="flex-1 p-4 space-y-2">
+                <button onclick="switchTab('dashboard')" id="btn-dashboard"
+                    class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                    <i class="fas fa-chart-line text-lg"></i>
+                    <span class="font-medium">Dashboard</span>
+                </button>
+
+                <!-- MASTER DATA (Only for kepalasek & dekan) -->
+                <div id="sidebar-master-data" class="relative hidden">
+                    <button onclick="toggleMasterMenu()" id="btn-master-data"
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-database text-lg"></i>
+                            <span class="font-medium whitespace-nowrap">Master Data</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-sm transition-transform duration-200"
+                            id="icon-master-data"></i>
+                    </button>
+                    <div id="menu-master-data" class="hidden flex-col mt-1 pl-4 space-y-1">
+                        <button onclick="switchTab('master-user')" id="btn-master-user"
+                            class="w-full text-left py-2 px-4 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors flex items-center">
+                            <i class="fas fa-users w-5"></i> User
+                        </button>
+                        <button onclick="switchTab('master-bagian')" id="btn-master-bagian"
+                            class="w-full text-left py-2 px-4 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors flex items-center">
+                            <i class="fas fa-sitemap w-5"></i> Bagian
+                        </button>
+                    </div>
+                </div>
+                <button onclick="switchTab('surat-masuk')" id="btn-surat-masuk"
+                    class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                    <i class="fas fa-envelope-open text-lg"></i>
+                    <span class="font-medium">Surat Masuk</span>
+                </button>
+                <button onclick="switchTab('surat-keluar')" id="btn-surat-keluar"
+                    class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                    <i class="fas fa-paper-plane text-lg"></i>
+                    <span class="font-medium">Surat Keluar</span>
+                </button>
+                <button onclick="switchTab('spk')" id="btn-spk"
+                    class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                    <i class="fas fa-tasks text-lg"></i>
+                    <span class="font-medium whitespace-nowrap">Perintah Tugas (SPT)</span>
+                </button>
+                <div class="relative">
+                    <button onclick="togglePelaporanMenu()" id="btn-pelaporan"
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-file-alt text-lg"></i>
+                            <span class="font-medium whitespace-nowrap">Pelaporan</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-sm transition-transform duration-200"
+                            id="icon-pelaporan"></i>
+                    </button>
+                    <div id="menu-pelaporan" class="hidden flex-col mt-1 pl-4 space-y-1">
+                        <button onclick="switchTab('pelaporan', 'masuk')" id="btn-pel-masuk"
+                            class="w-full text-left py-2 px-4 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors flex items-center">
+                            <i class="fas fa-envelope-open w-5"></i> Surat Masuk
+                        </button>
+                        <button onclick="switchTab('pelaporan', 'keluar')" id="btn-pel-keluar"
+                            class="w-full text-left py-2 px-4 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors flex items-center">
+                            <i class="fas fa-paper-plane w-5"></i> Surat Keluar
+                        </button>
+                        <button onclick="switchTab('pelaporan', 'spt')" id="btn-pel-spt"
+                            class="w-full text-left py-2 px-4 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors flex items-center">
+                            <i class="fas fa-tasks w-5"></i> Surat Perintah Tugas
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer / Profile Info -->
+            <div class="p-4 border-t border-white/5 space-y-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white shadow-lg"
+                        id="user-avatar">
+                        U
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-semibold text-white leading-tight" id="user-display-name">User Name</h4>
+                        <span class="text-xs text-cyan-400 font-medium capitalize" id="user-display-role">Role</span>
+                    </div>
+                </div>
+                <button onclick="logout()"
+                    class="w-full flex items-center justify-center space-x-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 font-semibold py-2.5 px-4 rounded-xl border border-red-500/20 transition-all">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Keluar</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 flex flex-col min-h-screen overflow-y-auto">
+
+            <!-- HEADER -->
+            <header
+                class="glass-panel border-b border-t-0 border-r-0 border-l-0 rounded-none px-8 py-5 flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                <div>
+                    <h1 class="text-2xl font-bold text-white tracking-tight" id="active-tab-title">Surat Masuk</h1>
+                    <p class="text-sm text-gray-400 mt-1" id="active-tab-desc">Daftar arsip surat masuk FTCB</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right hidden md:block">
+                        <p class="text-xs text-gray-500 font-medium">Selamat datang,</p>
+                        <p class="text-sm font-semibold text-white" id="header-user-welcome">Nama User</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- CONTAINER -->
+            <div class="p-8 space-y-8 max-w-7xl mx-auto w-full">
+
+                <!-- VIEW DASHBOARD -->
+                <div id="view-dashboard" class="space-y-8 hidden">
+                    <!-- STATS COUNTER -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div
+                            class="glass-panel p-6 rounded-2xl flex items-center justify-between relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 text-red-500/10 text-8xl font-bold"><i
+                                    class="fas fa-envelope-open"></i></div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Surat Masuk</p>
+                                <h3 class="text-3xl font-bold text-white mt-1" id="stat-surat-masuk">0</h3>
+                            </div>
+                            <div class="p-3 bg-red-500/10 rounded-xl text-red-400 text-xl"><i
+                                    class="fas fa-envelope-open"></i></div>
+                        </div>
+                        <div
+                            class="glass-panel p-6 rounded-2xl flex items-center justify-between relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 text-yellow-500/10 text-8xl font-bold"><i
+                                    class="fas fa-paper-plane"></i></div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Surat Keluar</p>
+                                <h3 class="text-3xl font-bold text-white mt-1" id="stat-surat-keluar">0</h3>
+                            </div>
+                            <div class="p-3 bg-yellow-500/10 rounded-xl text-yellow-400 text-xl"><i
+                                    class="fas fa-paper-plane"></i></div>
+                        </div>
+                        <div
+                            class="glass-panel p-6 rounded-2xl flex items-center justify-between relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 text-green-500/10 text-8xl font-bold"><i
+                                    class="fas fa-tasks"></i></div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Perintah Tugas</p>
+                                <h3 class="text-3xl font-bold text-white mt-1" id="stat-spk">0</h3>
+                            </div>
+                            <div class="p-3 bg-green-500/10 rounded-xl text-green-400 text-xl"><i
+                                    class="fas fa-tasks"></i></div>
+                        </div>
+                        <div
+                            class="glass-panel p-6 rounded-2xl flex items-center justify-between relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 text-blue-500/10 text-8xl font-bold"><i
+                                    class="fas fa-chart-pie"></i></div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Rekapitulasi</p>
+                                <h3 class="text-3xl font-bold text-white mt-1" id="stat-rekapitulasi">0</h3>
+                            </div>
+                            <div class="p-3 bg-blue-500/10 rounded-xl text-blue-400 text-xl"><i
+                                    class="fas fa-chart-pie"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- SEARCH SECTION FOR DEKAN, KEPALASEK -->
+                    <div id="dashboard-search-section"
+                        class="hidden glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden space-y-4">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                    <i class="fas fa-search text-cyan-400"></i> Pencarian Cepat
+                                </h3>
+                                <p class="text-xs text-gray-400 mt-1">Cari surat masuk, surat keluar, dan perintah tugas
+                                    secara langsung dari dashboard</p>
+                            </div>
+                            <div class="relative max-w-md w-full">
+                                <i class="fas fa-search absolute left-4 top-3.5 text-gray-500 text-sm"></i>
+                                <input type="text" id="dashboard-search-input" oninput="searchDataDashboard()"
+                                    class="glass-input w-full pl-11 pr-4 py-2.5 rounded-xl text-sm"
+                                    placeholder="Cari nomor, perihal, pengirim, penerima...">
+                            </div>
+                        </div>
+
+                        <!-- Results Container -->
+                        <div id="dashboard-search-results" class="hidden space-y-4 pt-2">
+                            <!-- Results will be injected here by JS -->
+                        </div>
+                    </div>
+
+                    <!-- CHART SECTION -->
+                    <div class="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden">
+                        <h3 class="text-lg font-bold text-white mb-4">Grafik Rekapitulasi Bulanan</h3>
+                        <div class="w-full" style="height: 300px;">
+                            <canvas id="rekapChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTENT WRAPPER -->
+                <div id="view-table" class="glass-panel rounded-2xl overflow-hidden border border-white/5">
+
+                    <!-- Control Bar -->
+                    <div
+                        class="p-6 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="relative max-w-md w-full">
+                            <i class="fas fa-search absolute left-4 top-3.5 text-gray-500"></i>
+                            <input type="text" id="search-input" oninput="searchData()"
+                                class="glass-input w-full pl-11 pr-4 py-2.5 rounded-xl text-sm"
+                                placeholder="Cari surat atau perintah tugas...">
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button id="btn-add-action" onclick="openCreateModal()"
+                                class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold py-2.5 px-5 rounded-xl text-sm flex items-center space-x-2 shadow-lg shadow-cyan-500/20 transform transition hover:-translate-y-0.5">
+                                <i class="fas fa-plus"></i>
+                                <span id="btn-add-text">Tambah Surat</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TABLE VIEW -->
+                    <div class="overflow-x-auto">
+                        <table class="spreadsheet-table text-sm text-left">
+                            <thead class="text-xs uppercase text-gray-400 border-b border-white/5" id="table-head">
+                                <!-- Set dynamically -->
+                            </thead>
+                            <tbody id="table-body">
+                                <!-- Set dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW PELAPORAN -->
+                <div id="view-pelaporan" class="hidden space-y-6">
+
+                    <!-- Filter Panel -->
+                    <div class="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden">
+                        <div
+                            class="absolute -top-8 -right-8 w-32 h-32 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10">
+                        </div>
+                        <div class="flex items-center gap-3 mb-5">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400">
+                                <i class="fas fa-file-chart-line text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Pelaporan Surat</h3>
+                                <p class="text-xs text-gray-400">Filter laporan berdasarkan rentang tanggal</p>
+                            </div>
+                        </div>
+
+                        <!-- Filter Form -->
+                        <div class="flex flex-col md:flex-row items-end gap-4">
+                            <div class="flex-1">
+                                <label
+                                    class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Dari
+                                    Tanggal</label>
+                                <div class="relative">
+                                    <i class="fas fa-calendar-alt absolute left-4 top-3.5 text-gray-500 text-sm"></i>
+                                    <input type="date" id="laporan-dari"
+                                        class="glass-input w-full pl-11 pr-4 py-3 rounded-xl text-sm"
+                                        onkeydown="handleLaporanEnter(event)">
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <label
+                                    class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Sampai
+                                    Tanggal</label>
+                                <div class="relative">
+                                    <i class="fas fa-calendar-check absolute left-4 top-3.5 text-gray-500 text-sm"></i>
+                                    <input type="date" id="laporan-sampai"
+                                        class="glass-input w-full pl-11 pr-4 py-3 rounded-xl text-sm"
+                                        onkeydown="handleLaporanEnter(event)">
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="generateLaporan()"
+                                    class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-semibold py-3 px-6 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-purple-500/20 transform transition hover:-translate-y-0.5 whitespace-nowrap">
+                                    <i class="fas fa-search"></i>
+                                    <span>Generate</span>
+                                </button>
+                                <button onclick="resetLaporan()"
+                                    class="bg-white/5 hover:bg-white/10 text-gray-300 font-semibold py-3 px-4 rounded-xl text-sm flex items-center gap-2 border border-white/10 transition-all">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Filter Buttons -->
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <span class="text-xs text-gray-500 font-medium self-center mr-1">Cepat:</span>
+                            <button onclick="setLaporanQuick('bulan-ini')"
+                                class="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all">Bulan
+                                Ini</button>
+                            <button onclick="setLaporanQuick('bulan-lalu')"
+                                class="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all">Bulan
+                                Lalu</button>
+                            <button onclick="setLaporanQuick('3-bulan')"
+                                class="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all">3
+                                Bulan Terakhir</button>
+                            <button onclick="setLaporanQuick('tahun-ini')"
+                                class="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all">Tahun
+                                Ini</button>
+                            <button onclick="setLaporanQuick('semua')"
+                                class="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all">Semua
+                                Data</button>
+                        </div>
+                    </div>
+
+                    <!-- Results Area -->
+                    <div id="laporan-results" class="space-y-6">
+                        <!-- Injected by JS -->
+                        <div class="glass-panel p-10 rounded-2xl border border-white/5 text-center text-gray-500">
+                            <i class="fas fa-file-search text-4xl mb-4 block opacity-40"></i>
+                            <p class="text-sm">Pilih rentang tanggal dan klik <span
+                                    class="text-purple-400 font-semibold">Generate Laporan</span> untuk menampilkan
+                                laporan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW MASTER USER -->
+                <div id="view-master-user" class="hidden space-y-6">
+                    <div
+                        class="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden flex items-center justify-between">
+                        <div
+                            class="absolute -top-8 -left-8 w-32 h-32 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10">
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                                <i class="fas fa-users text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Data Pengguna</h3>
+                                <p class="text-xs text-gray-400">Kelola master data akun pengguna aplikasi</p>
+                            </div>
+                        </div>
+                        <button onclick="openModalAddUser()"
+                            class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold py-2.5 px-5 rounded-xl text-sm shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2">
+                            <i class="fas fa-user-plus"></i> Pengguna Baru
+                        </button>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl overflow-hidden border border-white/5">
+                        <div class="p-4 border-b border-white/5 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-gray-400">Filter:</span>
+                                <input type="text" oninput="filterMasterUser(this.value)"
+                                    placeholder="Ketik nama atau role..."
+                                    class="glass-input px-3 py-1.5 rounded-lg text-sm w-48 focus:w-64 transition-all">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-gray-400">Show:</span>
+                                <select class="glass-input px-3 py-1.5 rounded-lg text-sm w-20 appearance-none">
+                                    <option>10</option>
+                                    <option>25</option>
+                                    <option>50</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="spreadsheet-table text-sm text-left w-full">
+                                <thead class="text-xs uppercase text-gray-400 border-b border-white/5 bg-white/5">
+                                    <tr>
+                                        <th class="py-3 px-4 font-semibold text-xs">No.</th>
+                                        <th class="py-3 px-4 font-semibold text-xs">Nama Pengguna</th>
+                                        <th class="py-3 px-4 font-semibold text-xs">Nama Lengkap</th>
+                                        <th class="py-3 px-4 font-semibold text-xs">Email</th>
+                                        <th class="py-3 px-4 font-semibold text-xs">Level</th>
+                                        <th class="py-3 px-4 font-semibold text-xs">Status</th>
+                                        <th class="py-3 px-4 font-semibold text-xs">Tgl Daftar</th>
+                                        <th class="py-3 px-4 font-semibold text-xs">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-master-user-body">
+                                    <!-- Diisi oleh JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW MASTER BAGIAN -->
+                <div id="view-master-bagian" class="hidden space-y-6">
+                    <div
+                        class="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden flex items-center justify-between">
+                        <div
+                            class="absolute -top-8 -left-8 w-32 h-32 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10">
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center text-green-400">
+                                <i class="fas fa-sitemap text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Data Bagian</h3>
+                                <p class="text-xs text-gray-400">Kelola master data instansi/divisi dan bagian</p>
+                            </div>
+                        </div>
+                        <button onclick="openModalAddBagian()"
+                            class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-semibold py-2.5 px-5 rounded-xl text-sm shadow-lg shadow-green-500/20 transition-all flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Bagian Baru
+                        </button>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl overflow-hidden border border-white/5">
+                        <div class="p-4 border-b border-white/5 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-gray-400">Filter:</span>
+                                <input type="text" oninput="filterMasterBagian(this.value)"
+                                    placeholder="Ketik nama bagian..."
+                                    class="glass-input px-3 py-1.5 rounded-lg text-sm w-48 focus:w-64 transition-all">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-gray-400">Show:</span>
+                                <select class="glass-input px-3 py-1.5 rounded-lg text-sm w-20 appearance-none">
+                                    <option>10</option>
+                                    <option>25</option>
+                                    <option>50</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="spreadsheet-table text-sm text-left w-full">
+                                <thead class="text-xs uppercase text-gray-400 border-b border-white/5 bg-white/5">
+                                    <tr>
+                                        <th class="py-3 px-4 font-semibold w-24">No.</th>
+                                        <th class="py-3 px-4 font-semibold">Nama Bagian</th>
+                                        <th class="py-3 px-4 font-semibold w-48 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-master-bagian-body">
+                                    <!-- Diisi oleh JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: ADD SURAT (MASUK/KELUAR) -->
+    <div id="modal-surat"
+        class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl p-8 max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('modal-surat')"
+                class="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-xl font-bold text-white mb-6" id="modal-surat-title">Tambah Surat Masuk</h2>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Nomor Surat</label>
+                    <input type="text" id="surat-nomor" class="glass-input w-full px-4 py-2.5 rounded-xl text-sm"
+                        placeholder="(Format: Perihal-UBL-FTCB-Kode Unit-Nomor Urut-Bulan-Tahun)">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2"
+                        id="lbl-pengirim-penerima">Pengirim</label>
+                    <div class="relative">
+                        <select id="surat-pihak"
+                            class="glass-input w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer">
+                            <option value="" disabled selected>Pilih Instansi/Unit</option>
+                            <!-- Diisi dinamis dari MASTER_BAGIAN oleh JS -->
+                        </select>
+                        <i
+                            class="fas fa-chevron-down absolute right-4 top-3.5 text-gray-500 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Perihal</label>
+                    <div class="relative">
+                        <select id="surat-perihal"
+                            class="glass-input w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer">
+                            <option value="" disabled selected>Pilih Perihal</option>
+                            <option value="Surat Edaran">Surat Edaran</option>
+                            <option value="Surat Permohonan">Surat Permohonan</option>
+                            <option value="Surat Keterangan">Surat Keterangan</option>
+                            <option value="Surat Pemberitahuan">Surat Pemberitahuan</option>
+                            <option value="Surat Pengumuman">Surat Pengumuman</option>
+                            <option value="Surat Perjanjian Kerja">Surat Perjanjian Kerja</option>
+                            <option value="Surat Izin">Surat Izin</option>
+                            <option value="Surat Rekomendasi">Surat Rekomendasi</option>
+                            <option value="Surat Tugas">Surat Tugas</option>
+                            <option value="Surat Undangan">Surat Undangan</option>
+                            <option value="Surat Usulan">Surat Usulan</option>
+                            <option value="Surat Keputusan">Surat Keputusan</option>
+                        </select>
+                        <i
+                            class="fas fa-chevron-down absolute right-4 top-3.5 text-gray-500 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Tanggal (Otomatis)</label>
+                    <input type="text" id="surat-tanggal" readonly
+                        class="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-gray-500 bg-black/20">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">File Lampiran</label>
+                    <input type="file" id="surat-file" class="glass-input w-full px-4 py-2 rounded-xl text-sm">
+                </div>
+                <div class="pt-4 flex space-x-3 justify-end">
+                    <button onclick="closeModal('modal-surat')"
+                        class="px-5 py-2.5 rounded-xl bg-white/5 text-gray-300 hover:bg-white/10 text-sm font-semibold transition-all">Batal</button>
+                    <button onclick="saveSurat()"
+                        class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white text-sm font-semibold shadow-lg shadow-cyan-500/20 transition-all">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD PERINTAH TUGAS (SPT) -->
+    <div id="modal-spk"
+        class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl p-8 max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('modal-spk')"
+                class="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-xl font-bold text-white mb-6">Tambah Perintah Tugas (SPT)</h2>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Nomor SPT</label>
+                    <input type="text" id="spk-nomor" class="glass-input w-full px-4 py-2.5 rounded-xl text-sm"
+                        placeholder="Contoh: SPK-001/FTCB/26">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Perihal / Deskripsi Tugas</label>
+                    <textarea id="spk-perihal" rows="3" class="glass-input w-full px-4 py-2.5 rounded-xl text-sm"
+                        placeholder="Deskripsikan perintah tugas..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Ditugaskan Kepada</label>
+                    <select id="spk-assign" class="glass-input w-full px-4 py-2.5 rounded-xl text-sm">
+                        <!-- Populated dynamically based on role -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Tanggal (Otomatis)</label>
+                    <input type="text" id="spk-tanggal" readonly
+                        class="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-gray-500 bg-black/20">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">File Lampiran SPK (Jika ada)</label>
+                    <input type="file" id="spk-file" class="glass-input w-full px-4 py-2 rounded-xl text-sm">
+                </div>
+                <div class="pt-4 flex space-x-3 justify-end">
+                    <button onclick="closeModal('modal-spk')"
+                        class="px-5 py-2.5 rounded-xl bg-white/5 text-gray-300 hover:bg-white/10 text-sm font-semibold transition-all">Batal</button>
+                    <button onclick="saveSPK()"
+                        class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white text-sm font-semibold shadow-lg shadow-cyan-500/20 transition-all">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SPK DETAILS & APPROVAL -->
+    <div id="modal-spk-detail"
+        class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl p-8 max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('modal-spk-detail')"
+                class="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-xl font-bold text-white mb-6">Detail Perintah Tugas (SPT)</h2>
+            <div class="space-y-4 text-sm text-gray-300">
+                <div class="flex justify-between border-b border-white/5 pb-2">
+                    <span class="text-gray-400 font-medium">Nomor SPT:</span>
+                    <span class="text-white font-semibold" id="detail-spk-nomor">-</span>
+                </div>
+                <div class="flex justify-between border-b border-white/5 pb-2">
+                    <span class="text-gray-400 font-medium">Tanggal:</span>
+                    <span class="text-white font-semibold" id="detail-spk-tanggal">-</span>
+                </div>
+                <div class="flex justify-between border-b border-white/5 pb-2" id="row-detail-assigned-from">
+                    <span class="text-gray-400 font-medium">Ditugaskan Dari:</span>
+                    <span class="text-white font-semibold" id="detail-spk-assigned-from">-</span>
+                </div>
+                <div class="flex justify-between border-b border-white/5 pb-2">
+                    <span class="text-gray-400 font-medium">Ditugaskan Kepada:</span>
+                    <span class="text-white font-semibold" id="detail-spk-assign">-</span>
+                </div>
+                <div class="flex justify-between border-b border-white/5 pb-2" id="row-detail-uploader">
+                    <span class="text-gray-400 font-medium">Uploader:</span>
+                    <span class="text-white font-semibold" id="detail-spk-uploader">-</span>
+                </div>
+                <div class="flex justify-between border-b border-white/5 pb-2" id="row-detail-status">
+                    <span class="text-gray-400 font-medium">Status Pekerjaan:</span>
+                    <span class="font-semibold" id="detail-spk-status">-</span>
+                </div>
+                <div class="border-b border-white/5 pb-2">
+                    <span class="text-gray-400 font-medium block mb-1">Perihal:</span>
+                    <p class="text-white font-semibold leading-relaxed" id="detail-spk-perihal">-</p>
+                </div>
+                <div class="border-b border-white/5 pb-2 hidden" id="detail-spk-files-container">
+                    <span class="text-gray-400 font-medium block mb-2">Berkas Terkait:</span>
+                    <div id="detail-spk-files-list" class="space-y-2">
+                        <!-- File links will be injected here -->
+                    </div>
+                </div>
+
+
+
+                <!-- DYNAMIC ACTIONS SECTION -->
+                <div id="section-spk-actions" class="pt-4 border-t border-white/5">
+                    <!-- Injected dynamically by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD PENGGUNA -->
+    <div id="modal-add-user"
+        class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl p-8 max-w-md w-full relative">
+            <button onclick="closeModalAddUser()"
+                class="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors w-8 h-8 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-xl font-bold text-white mb-1"><i class="fas fa-user-plus text-cyan-400 mr-2"></i>Tambah
+                Pengguna Baru</h2>
+            <p class="text-xs text-gray-400 mb-6 pb-4 border-b border-white/5">Tambahkan kredensial dan role untuk akses
+                e-surat.</p>
+            <form id="form-add-user" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Username</label>
+                    <input type="text" id="add-username" required
+                        class="glass-input w-full px-4 py-2.5 rounded-xl text-sm" placeholder="Contoh: kaprodi_si">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Nama Lengkap</label>
+                    <input type="text" id="add-user-name" required
+                        class="glass-input w-full px-4 py-2.5 rounded-xl text-sm" placeholder="Contoh: Dr. Fulan, M.T">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Email</label>
+                    <input type="email" id="add-email" required
+                        class="glass-input w-full px-4 py-2.5 rounded-xl text-sm"
+                        placeholder="Contoh: dekan@ftcb.ac.id">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Role / Level</label>
+                    <div class="relative">
+                        <select id="add-user-role" required
+                            class="glass-input w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer">
+                            <option value="">-- Pilih Role --</option>
+                            <option value="dekan">Dekan</option>
+                            <option value="kepalasek">Kepala Sekretariat</option>
+                        </select>
+                        <i
+                            class="fas fa-chevron-down absolute right-4 top-3 text-gray-500 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Password</label>
+                    <input type="password" id="add-password" required
+                        class="glass-input w-full px-4 py-2.5 rounded-xl text-sm" placeholder="Ketik sandi akun">
+                </div>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="closeModalAddUser()"
+                        class="flex-1 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-semibold text-sm transition-all border border-white/10">Batal</button>
+                    <button type="button" onclick="saveUser()"
+                        class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD BAGIAN -->
+    <div id="modal-add-bagian"
+        class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl p-8 max-w-sm w-full relative">
+            <button onclick="closeModalAddBagian()"
+                class="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors w-8 h-8 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-xl font-bold text-white mb-1"><i class="fas fa-plus text-green-400 mr-2"></i>Tambah Bagian
+                Baru</h2>
+            <p class="text-xs text-gray-400 mb-6 pb-4 border-b border-white/5">Tambahkan instansi atau divisi baru.</p>
+            <form id="form-add-bagian" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Nama Bagian</label>
+                    <input type="text" id="add-bagian-name" required
+                        class="glass-input w-full px-4 py-2.5 rounded-xl text-sm" placeholder="Contoh: Tata Usaha">
+                </div>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="closeModalAddBagian()"
+                        class="flex-1 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-semibold text-sm transition-all border border-white/10">Batal</button>
+                    <button type="button" onclick="saveBagian()"
+                        class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-semibold text-sm shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS SCRIPTS -->
+    <script src="script.js?v=5.1"></script>
+</body>
+
+</html>

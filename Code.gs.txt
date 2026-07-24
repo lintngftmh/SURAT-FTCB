@@ -1,0 +1,232 @@
+function doPost(e) {
+  // Pastikan agar request dikirim dengan header Content-Type: application/json
+  var output = ContentService.createTextOutput();
+  output.setMimeType(ContentService.MimeType.JSON);
+  
+  try {
+    // Membaca data yang dikirim dengan format form-urlencoded
+    var type = e.parameter.type;
+    var dataStr = e.parameter.data;
+    var action = e.parameter.action || 'save'; // Ambil action (save atau delete)
+    
+    // Jika tidak ada data dari parameter, coba fallback ke postData (untuk kompatibilitas)
+    if (!type && e.postData && e.postData.contents) {
+      var payload = JSON.parse(e.postData.contents);
+      type = payload.type;
+      dataStr = JSON.stringify(payload.data);
+    }
+    
+    var data = JSON.parse(dataStr);
+  
+    
+    // Menggunakan getActiveSpreadsheet() agar otomatis terhubung ke Sheet tempat script ini berada
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) {
+      // Jika script ini dibuat terpisah (standalone), ganti ID di bawah ini dengan ID Spreadsheet Anda
+      ss = SpreadsheetApp.openById('GANTI_DENGAN_ID_SPREADSHEET_ANDA');
+    }
+    
+    var sheet = ss.getSheetByName(type);
+    
+    // Jika sheet belum ada, buat sheet baru secara otomatis
+    if (!sheet) {
+      sheet = ss.insertSheet(type);
+      
+      // Buat Header berdasarkan tipe surat
+      if (type === 'suratMasuk' || type === 'suratKeluar') {
+        sheet.appendRow(["ID", "Nomor", "Pihak (Pengirim/Penerima)", "Perihal", "Tanggal", "Nama File", "Uploader"]);
+      } else if (type === 'spk') {
+        sheet.appendRow(["ID", "Nomor", "Perihal", "Ditugaskan Kepada", "Tanggal", "Status", "Uploader", "Nama File"]);
+      } else if (type === 'users') {
+        sheet.appendRow(["Username", "Name", "Email", "Role", "Password", "Status", "TglDaftar", "LoginTerakhir"]);
+      } else if (type === 'bagian') {
+        sheet.appendRow(["Nama"]);
+      }
+      // Formatting Header (Bold)
+      sheet.getRange(1, 1, 1, sheet.getLastColumn()).setFontWeight("bold");
+    }
+    
+    // Jika type adalah users atau bagian, replace seluruh sheet (Master Data)
+    if (type === 'users' || type === 'bagian') {
+      sheet.clear(); // Bersihkan isi lama
+      
+      // Tulis ulang header
+      if (type === 'users') {
+        sheet.appendRow(["Username", "Name", "Email", "Role", "Password", "Status", "TglDaftar", "LoginTerakhir"]);
+        sheet.getRange(1, 1, 1, 8).setFontWeight("bold");
+        
+        if (data && data.length > 0) {
+          data.forEach(function(item) {
+            sheet.appendRow([item.username, item.name, item.email, item.role, item.password, item.status, item.tglDaftar, item.loginTerakhir]);
+          });
+        }
+      } else if (type === 'bagian') {
+        sheet.appendRow(["Nama"]);
+        sheet.getRange(1, 1, 1, 1).setFontWeight("bold");
+        
+        if (data && data.length > 0) {
+          data.forEach(function(item) {
+            sheet.appendRow([item.nama]);
+          });
+        }
+      }
+      
+      return output.setContent(JSON.stringify({ 
+        "status": "success", 
+        "message": "Master data berhasil disimpan di spreadsheet" 
+      }));
+    }
+    
+    // Jika action adalah delete (hapus baris)
+    if (action === 'delete') {
+      var dataRange = sheet.getDataRange();
+      var values = dataRange.getValues();
+      for (var i = 1; i < values.length; i++) {
+        if (values[i][0] == (data.id || "")) {
+          sheet.deleteRow(i + 1);
+          return output.setContent(JSON.stringify({ 
+            "status": "success", 
+            "message": "Data berhasil dihapus dari spreadsheet" 
+          }));
+        }
+      }
+      return output.setContent(JSON.stringify({ 
+        "status": "success", 
+        "message": "Data tidak ditemukan atau sudah dihapus" 
+      }));
+    }
+    
+    // Siapkan array baris baru yang akan dimasukkan ke spreadsheet
+    var rowData = [];
+    
+    if (type === 'suratMasuk' || type === 'suratKeluar') {
+      rowData = [
+        data.id || new Date().getTime(),
+        data.nomor || "-",
+        data.pihak || "-",
+        data.perihal || "-",
+        data.tanggal || "-",
+        data.file || "-",
+        data.uploader || "-"
+      ];
+    } else if (type === 'spk') {
+      rowData = [
+        data.id || new Date().getTime(),
+        data.nomor || "-",
+        data.perihal || "-",
+        data.assignTo || "-",
+        data.tanggal || "-",
+        data.status || "Menunggu",
+        data.uploader || "-",
+        data.file || "-"
+      ];
+    }
+    
+    // Cek apakah ID sudah ada untuk melakukan UPDATE (Upsert)
+    var dataRange = sheet.getDataRange();
+    var values = dataRange.getValues();
+    var isUpdated = false;
+
+    // Mulai dari baris ke-2 (index 1) karena baris 1 adalah header
+    for (var i = 1; i < values.length; i++) {
+      if (values[i][0] == (data.id || "")) {
+        // Jika ketemu ID yang sama, update baris tersebut (i + 1 karena array index 0 = row 1)
+        sheet.getRange(i + 1, 1, 1, rowData.length).setValues([rowData]);
+        isUpdated = true;
+        break;
+      }
+    }
+
+    if (!isUpdated) {
+      // Jika tidak ketemu, maka insert baru
+      sheet.appendRow(rowData);
+    }
+    
+    return output.setContent(JSON.stringify({ 
+      "status": "success", 
+      "message": "Data berhasil disimpan/diupdate di spreadsheet" 
+    }));
+    
+  } catch(error) {
+    return output.setContent(JSON.stringify({ 
+      "status": "error", 
+      "message": error.toString() 
+    }));
+  }
+}
+
+function doGet(e) {
+  var output = ContentService.createTextOutput();
+  output.setMimeType(ContentService.MimeType.JSON);
+  
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) {
+      ss = SpreadsheetApp.openById('GANTI_DENGAN_ID_SPREADSHEET_ANDA');
+    }
+    
+    var responseData = {
+      suratMasuk: getSheetData(ss, 'suratMasuk'),
+      suratKeluar: getSheetData(ss, 'suratKeluar'),
+      spk: getSheetData(ss, 'spk'),
+      users: getSheetData(ss, 'users'),
+      bagian: getSheetData(ss, 'bagian')
+    };
+    
+    return output.setContent(JSON.stringify({ 
+      "status": "success", 
+      "data": responseData 
+    }));
+    
+  } catch(error) {
+    return output.setContent(JSON.stringify({ 
+      "status": "error", 
+      "message": error.toString() 
+    }));
+  }
+}
+
+function getSheetData(ss, sheetName) {
+  var sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return []; // Hanya header atau kosong
+  
+  var result = [];
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var obj = {};
+    if (sheetName === 'suratMasuk' || sheetName === 'suratKeluar') {
+      obj.id = row[0];
+      obj.nomor = row[1];
+      obj.pihak = row[2];
+      obj.perihal = row[3];
+      obj.tanggal = row[4];
+      obj.file = row[5];
+      obj.uploader = row[6];
+    } else if (sheetName === 'spk') {
+      obj.id = row[0];
+      obj.nomor = row[1];
+      obj.perihal = row[2];
+      obj.assignTo = row[3];
+      obj.tanggal = row[4];
+      obj.status = row[5];
+      obj.uploader = row[6];
+      obj.file = row[7];
+    } else if (sheetName === 'users') {
+      obj.username = row[0];
+      obj.name = row[1];
+      obj.email = row[2];
+      obj.role = row[3];
+      obj.password = row[4];
+      obj.status = row[5];
+      obj.tglDaftar = row[6];
+      obj.loginTerakhir = row[7];
+    } else if (sheetName === 'bagian') {
+      obj.nama = row[0];
+    }
+    result.push(obj);
+  }
+  return result;
+}
