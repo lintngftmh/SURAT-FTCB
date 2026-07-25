@@ -230,7 +230,7 @@ function login() {
             `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
         currentUser = found;
-        safeSetItem('esurat_user', JSON.stringify(found));
+        sessionStorage.setItem('esurat_user', JSON.stringify(found));
         errorEl.classList.add('hidden');
 
         document.getElementById('username').value = '';
@@ -252,14 +252,15 @@ function login() {
 
 function logout() {
     currentUser = null;
-    safeRemoveItem('esurat_user');
+    sessionStorage.removeItem('esurat_user');
+    localStorage.removeItem('esurat_user'); // Bersihkan sisa jika ada
     document.getElementById('dashboard-screen').classList.add('hidden');
     document.getElementById('login-screen').classList.remove('hidden');
 }
 
 function checkAuth() {
     try {
-        const stored = safeGetItem('esurat_user');
+        const stored = sessionStorage.getItem('esurat_user') || localStorage.getItem('esurat_user');
         if (stored) {
             const savedUser = JSON.parse(stored);
             const freshUser = USERS.find(u => u.username === savedUser.username);
@@ -1134,21 +1135,15 @@ function viewSuratDetail(type, id) {
 
 // --- MODALS ACTIONS ---
 function populatePihakDropdown() {
-    const select = document.getElementById('surat-pihak');
-    if (!select) return;
-    // Simpan nilai saat ini jika ada
-    const currentVal = select.value;
-    // Reset, sisakan hanya placeholder
-    select.innerHTML = '<option value="" disabled selected>Pilih Instansi/Unit</option>';
+    const list = document.getElementById('surat-pihak-list');
+    if (!list) return;
+    list.innerHTML = '';
     // Isi dari MASTER_BAGIAN secara dinamis
     MASTER_BAGIAN.forEach(b => {
         const opt = document.createElement('option');
         opt.value = b.nama;
-        opt.textContent = b.nama;
-        select.appendChild(opt);
+        list.appendChild(opt);
     });
-    // Kembalikan nilai sebelumnya jika masih ada
-    if (currentVal) select.value = currentVal;
 }
 
 function openCreateModal() {
