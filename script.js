@@ -5,7 +5,7 @@
 // =============================================================
 
 // ─── GAS URL (isi setelah deploy Google Apps Script) ─────────
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxtyohUjzIrW3VhJlC5at7dj4C7kuD-OB825OdU4J5pgOe4B696i0cB0AIWZIi9oD_hFQ/exec'; // Dikosongkan agar saat diupload bersih dari data uji coba
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwUk8O2k_hETBEzjf9VpE3oAo-XusXtWhGPVwYH2dU1BRXbwE-cpTxHKmXt-uB5Er5bHQ/exec'; // URL Backend Baru
 
 // ─── Seed Data Pengguna ───────────────────────────────────────
 let USERS = [
@@ -760,9 +760,9 @@ function renderTable() {
         `;
 
         const filtered = db.suratMasuk.filter(s =>
-            s.nomor.toLowerCase().includes(searchVal) ||
-            s.pihak.toLowerCase().includes(searchVal) ||
-            s.perihal.toLowerCase().includes(searchVal)
+            String(s.nomor || '').toLowerCase().includes(searchVal) ||
+            String(s.pihak || '').toLowerCase().includes(searchVal) ||
+            String(s.perihal || '').toLowerCase().includes(searchVal)
         );
 
         if (filtered.length === 0) {
@@ -808,9 +808,9 @@ function renderTable() {
         `;
 
         const filtered = db.suratKeluar.filter(s =>
-            s.nomor.toLowerCase().includes(searchVal) ||
-            s.pihak.toLowerCase().includes(searchVal) ||
-            s.perihal.toLowerCase().includes(searchVal)
+            String(s.nomor || '').toLowerCase().includes(searchVal) ||
+            String(s.pihak || '').toLowerCase().includes(searchVal) ||
+            String(s.perihal || '').toLowerCase().includes(searchVal)
         );
 
         if (filtered.length === 0) {
@@ -861,9 +861,9 @@ function renderTable() {
         let spkList = db.spk;
 
         const filtered = spkList.filter(s =>
-            (s.nomor || '').toLowerCase().includes(searchVal) ||
-            (s.assignTo || '').toLowerCase().includes(searchVal) ||
-            (s.perihal || '').toLowerCase().includes(searchVal)
+            (s.nomor || '').toString().toLowerCase().includes(searchVal) ||
+            (s.assignTo || '').toString().toLowerCase().includes(searchVal) ||
+            (s.perihal || '').toString().toLowerCase().includes(searchVal)
         );
 
         if (filtered.length === 0) {
@@ -931,23 +931,23 @@ function searchDataDashboard() {
 
     // Filter data
     const matchedSuratMasuk = db.suratMasuk.filter(s =>
-        s.nomor.toLowerCase().includes(searchVal) ||
-        s.pihak.toLowerCase().includes(searchVal) ||
-        s.perihal.toLowerCase().includes(searchVal)
+        String(s.nomor || '').toLowerCase().includes(searchVal) ||
+        String(s.pihak || '').toLowerCase().includes(searchVal) ||
+        String(s.perihal || '').toLowerCase().includes(searchVal)
     );
 
     const matchedSuratKeluar = db.suratKeluar.filter(s =>
-        s.nomor.toLowerCase().includes(searchVal) ||
-        s.pihak.toLowerCase().includes(searchVal) ||
-        s.perihal.toLowerCase().includes(searchVal)
+        String(s.nomor || '').toLowerCase().includes(searchVal) ||
+        String(s.pihak || '').toLowerCase().includes(searchVal) ||
+        String(s.perihal || '').toLowerCase().includes(searchVal)
     );
 
     const spkListForSearch = getVisibleSpk();
 
     const matchedSPK = spkListForSearch.filter(s =>
-        (s.nomor || '').toLowerCase().includes(searchVal) ||
-        (s.assignTo || '').toLowerCase().includes(searchVal) ||
-        (s.perihal || '').toLowerCase().includes(searchVal)
+        String(s.nomor || '').toLowerCase().includes(searchVal) ||
+        String(s.assignTo || '').toLowerCase().includes(searchVal) ||
+        String(s.perihal || '').toLowerCase().includes(searchVal)
     );
 
     const totalResults = matchedSuratMasuk.length + matchedSuratKeluar.length + matchedSPK.length;
@@ -1162,13 +1162,15 @@ function openCreateModal() {
     } else if (currentTab === 'spk') {
         const assignSelect = document.getElementById('spk-assign');
         assignSelect.innerHTML = '';
+        const opt = document.createElement('option');
+        opt.value = 'Kepala Sekretariat';
         if (currentUser.role === 'dekan') {
-            assignSelect.innerHTML = '<option value="Kepala Sekretariat">Kepala Sekretariat</option>';
-            assignSelect.value = 'Kepala Sekretariat';
+            opt.textContent = 'Kepala Sekretariat';
         } else if (currentUser.role === 'kepalasek') {
-            assignSelect.innerHTML = '<option value="Kepala Sekretariat">Kerjakan Sendiri</option>';
-            assignSelect.value = 'Kepala Sekretariat';
+            opt.textContent = 'Kerjakan Sendiri';
         }
+        assignSelect.appendChild(opt);
+        assignSelect.value = 'Kepala Sekretariat';
 
         const kaprodiContainer = document.getElementById('spk-kaprodi-select-container');
         if (kaprodiContainer) kaprodiContainer.classList.add('hidden');
